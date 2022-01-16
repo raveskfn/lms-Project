@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 //import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.demo.member.Service.MemberService;
 import com.example.demo.member.entity.Member;
@@ -24,6 +25,14 @@ public class MemberController {
 	
 	
 	private final MemberService memberService;
+	
+	
+	@RequestMapping("/member/login")
+	public String login() {
+		
+		return "member/login";
+	}
+	
 	
 	@GetMapping("/member/register")
 	public String register() {
@@ -54,6 +63,11 @@ public class MemberController {
 		
 		return "member/email_auth";
 		
+	}
+	@GetMapping("/member/info")
+	public String memberInfo() {
+		
+		return "member/info";
 	}
 	
 }

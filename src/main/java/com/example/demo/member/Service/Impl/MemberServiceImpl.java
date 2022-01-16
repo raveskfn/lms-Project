@@ -3,11 +3,15 @@ package com.example.demo.member.Service.Impl;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.components.MailComponents;
 import com.example.demo.member.Service.MemberService;
 import com.example.demo.member.entity.Member;
+import com.example.demo.member.exception.MemberNotEmailAuthException;
 import com.example.demo.member.model.MemberInput;
 import com.example.demo.member.repository.MemberRepository;
 
@@ -23,8 +27,10 @@ public class MemberServiceImpl implements MemberService {
 	public boolean register(MemberInput parameter) {
 		
 		Optional<Member> optionalMember = memberRepository.findById(parameter.getUserId());
-		if (optionalMember.isPresent())
-		memberRepository.findById(parameter.getUserId());
+		if (optionalMember.isPresent()) {
+			return false;
+		}
+		String encPassword = BCrypt.hashpw(parameter.getPassword(), BCrypt.gensalt());
 		
 		String uuid =UUID.randomUUID().toString();
 		
@@ -32,7 +38,7 @@ public class MemberServiceImpl implements MemberService {
 				.userID(parameter.getUserId())
 				.UserName(parameter.getUserName())
 				.UserID(parameter.getPhone())
-				.password(parameter.getPassword())
+				.password(encPassword)
 				.RegDt(LocalDateTime.now())
 				.EmailAuthYn(false)
 				.EmailAuthKey(uuid)
@@ -61,6 +67,26 @@ public class MemberServiceImpl implements MemberService {
 		memberRepository.save(member);
 		
 		return false;
+	}
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		
+		Optional<Member> optionalMember = memberRepository.findById(username);
+		if (!optionalMember.isPresent()) {
+			throw new UsernameNotFoundException("회원 정보가 존재핮디 않습니다");
+		}
+		
+		Member member = optionalMember.get();
+		
+		if (!member.isEmailAuthYn()) {
+			throw new MemberNotEmailAuthException("이메일 활성화 이후에 로그인을 해주세요.");
+		}
+		
+		List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+		grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+		
+		
+		return new User(member.getUserId(), member.getPassword(), grantedAuthorities );
 	}
 
 }
