@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.demo.member.Service.MemberService;
 import com.example.demo.member.entity.Member;
 import com.example.demo.member.model.MemberInput;
+import com.example.demo.member.model.ResetPasswordInput;
 import com.example.demo.member.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,20 @@ public class MemberController {
 		
 		return "member/login";
 	}
-	
+	@GetMapping("/member/find/password")
+	public String findPassword() {
+		
+		return "member/find_password";
+	}
+	@PostMapping("/member/find/password")
+	public String findPasswordSubmit(Model model, ResetPasswordInput parameter) {
+		
+		boolean result = memberService.sendResetPassword(parameter);
+		
+		model.addAttribute("result", result);
+		
+		return "member/find_password_result";
+	}
 	
 	@GetMapping("/member/register")
 	public String register() {
